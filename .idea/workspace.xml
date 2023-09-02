@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d80a5cdb-06ee-4c61-9971-7cb25d64b735" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Order Server/order-server.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Order Server/package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Order Server/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/User Management/user-server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User Server/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/User Management/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User Server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/User Management/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User Server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/User Management/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/User Server/server.js" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="2UpSuZOa4hnKhYMCyEAoMUjwdar" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "multiplle-databases-with-nodejs",
+    "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "C:\\Users\\dinir\\AppData\\Local\\Programs\\WebStorm\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d80a5cdb-06ee-4c61-9971-7cb25d64b735" name="Changes" comment="" />
+      <created>1693635252546</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1693635252546</updated>
+      <workItem from="1693635254751" duration="11587000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+</project>
