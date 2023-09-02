@@ -47,20 +47,21 @@ db_postgresql.connect()
 
 app.get('/user',(req,res)=>{
     const sql = "SELECT * FROM user";
-    db.query(sql,(err,result) => {
+    db_mysql.query(sql,(err,result) => {
         if(err) return res.json({Message: "Error inside server..."});
         return res.json(result);
     });
 })
 
 app.post('/user/add',(req,res)=>{
-    const sql = "INSERT INTO user (`name`,`age`) VALUES (?)";
+    const sql = "INSERT INTO user (`name`,`address`,`phoneNumber`) VALUES (?)";
     const values = [
         req.body.name,
-        req.body.age
+        req.body.address,
+        req.body.phoneNumber
     ]
-    db.query(sql,[values],(err,result) => {
-        if(err) return res.json(err)
+    db_mysql.query(sql,[values],(err,result) => {
+        if(err) return res.json(values)
         return res.json(result)
     })
 })
@@ -68,16 +69,16 @@ app.post('/user/add',(req,res)=>{
 app.get('/user/read/:id',(req,res)=>{
     const sql = "SELECT * FROM user WHERE id = ?";
     const id = req.params.id;
-    db.query(sql,[id],(err,result) => {
+    db_mysql.query(sql,[id],(err,result) => {
         if(err) return res.json({Message: "Error inside server..."});
         return res.json(result);
     });
 })
 
 app.put('/user/update/:id',(req,res)=>{
-    const sql = "UPDATE user SET `name`=?,`age`=? WHERE id = ?";
+    const sql = "UPDATE user SET `name`=?,`address`=?,`phoneNumber`=?  WHERE id = ?";
     const id = req.params.id;
-    db.query(sql,[req.body.name,req.body.age,id],(err,result) => {
+    db_mysql.query(sql,[req.body.name,req.body.address,req.body.phoneNumber,id],(err,result) => {
         if(err) return res.json({Message: "Error inside server..."});
         return res.json(result);
     });
@@ -86,7 +87,7 @@ app.put('/user/update/:id',(req,res)=>{
 app.delete(`/user/delete/:id`,(req,res) => {
     const sql = "DELETE FROM user WHERE id=?"
     const id = req.params.id;
-    db.query(sql,[id],(err,result) => {
+    db_mysql.query(sql,[id],(err,result) => {
         if(err) return res.json({Message: "Error inside server..."});
         return res.json(result);
     });
