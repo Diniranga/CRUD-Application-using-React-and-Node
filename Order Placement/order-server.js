@@ -26,32 +26,7 @@ db.connect()
         console.error('Error connecting to PostgreSQL database:', err);
     });
 
-app.post('/orders/add', (req, res) => {
-    const maxIdQuery = 'SELECT MAX("orderID") AS maxId FROM orders';
-
-    db.query(maxIdQuery, (err, result) => {
-        if (err) return res.status(500).json(err);
-
-        let nextId = 1;
-        if (result?.rows?.[0]?.maxid) {
-            const maxId = result.rows[0].maxid;
-            const numericPart = parseInt(maxId.substring(1));
-            nextId = numericPart + 1;
-        }
-
-        const newOrderID = 'O' + nextId;
-
-        const sql = 'INSERT INTO orders ("orderID", "userID", "productID", "quantity", "cost", "date") VALUES ($1, $2, $3, $4, $5, NOW())';
-        const values = [newOrderID, req.body.userID, req.body.productID, req.body.quantity, req.body.cost];
-
-        db.query(sql, values, (err, result) => {
-            if (err) return res.status(500).json(err);
-            return res.json(result);
-        });
-    });
-});
-
-app.get('/orders', (req, res) => {
+app.get('/orders/all', (req, res) => {
     const sql = 'SELECT * FROM orders';
     db.query(sql, (err, result) => {
         if (err) return res.status(500).json({ message: 'Error inside server...' });
@@ -86,6 +61,71 @@ app.put('/orders/update/:orderID', (req, res) => {
         if (err) return res.status(500).json({ message: 'Error inside server...' + err });
         return res.json(result);
     });
+});
+
+app.post('/orders/add', async (req, res) => {
+
+    const userID = req.body.userID;
+    const productID = req.body.productID;
+    const quantity = req.body.quantity;
+
+    try {
+
+        const userExistsResponse = await fetch(`http://localhost:7000/users/check/${userID}`);
+        const userExists = await userExistsResponse.json();
+
+        if (!userExists) {
+            return res.status(400).json({ success: false, message: 'User does not exist' });
+        }
+
+        // If userID exists, proceed with the purchase
+        const purchaseResponse = await fetch(`http://localhost:9000/inventory/purchase`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "productID": productID, // Replace with the actual productID value
+                "quantity": quantity,   // Replace with the actual quantity value
+            }),
+        });
+
+        const purchaseResult = await purchaseResponse.json();
+
+        if (purchaseResult.success) {
+            // You can access the cost here from purchaseResult.cost
+            const cost = purchaseResult.cost;
+
+            // Purchase was successful, generate the next OrderID
+            const maxIdQuery = 'SELECT MAX("orderID") AS maxId FROM orders';
+
+            db.query(maxIdQuery, (err, result) => {
+                if (err) return res.status(500).json(err);
+
+                let nextId = 1;
+                if (result?.rows?.[0]?.maxid) {
+                    const maxId = result.rows[0].maxid;
+                    const numericPart = parseInt(maxId.substring(1));
+                    nextId = numericPart + 1;
+                }
+
+                const newOrderID = 'O' + nextId;
+
+                const sql = 'INSERT INTO orders ("orderID", "userID", "productID", "quantity", "cost", "date") VALUES ($1, $2, $3, $4, $5, NOW())';
+                const values = [newOrderID, userID, productID, quantity, cost]; // Use the cost from purchaseResult
+
+                db.query(sql, values, (err, result) => {
+                    if (err) return res.status(500).json(err);
+                    return res.json(purchaseResult);
+                });
+            });
+        } else {
+            // Purchase was not successful
+            return res.status(400).json(purchaseResult);
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
 });
 
 app.listen(8000, () => {

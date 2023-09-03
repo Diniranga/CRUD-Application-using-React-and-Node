@@ -1,98 +1,143 @@
-// import express from 'express';
-// import mysql from 'mysql2';
-// import cors from 'cors';
-//
-// const app = express();
-//
-// // Middleware
-// app.use(cors());
-// app.use(express.json());
-//
-// const db_mysql = mysql.createConnection({
-//     host: 'localhost',
-//     user: 'root',
-//     password: 'root',
-//     database: 'user',
-//     port: 3306,
-// });
-//
-// db_mysql.connect((err) => {
-//     if (err) {
-//         console.error('Database connection error:', err);
-//         return;
-//     }
-//     console.log('Connected to the database');
-// });
-//
-// // Routes for the 'user' resource
-//
-// app.get('/users', (req, res) => {
-//     const sql = 'SELECT * FROM user';
-//     db_mysql.query(sql, (err, result) => {
-//         if (err) return res.status(500).json({ message: 'Server error' });
-//         return res.json(result);
-//     });
-// });
-//
-// app.post('/users/add', (req, res) => {
-//     const maxIdQuery = 'SELECT MAX(id) AS maxId FROM user';
-//
-//     db_mysql.query(maxIdQuery, (err, result) => {
-//         if (err) {
-//             return res.status(500).json(err);
-//         }
-//
-//         // Calculate the next ID
-//         let nextId = 1;
-//         if (result?.[0]?.maxId) {
-//             const maxId = result[0].maxId;
-//             const numericPart = parseInt(maxId.substring(1));
-//             nextId = numericPart + 1;
-//         }
-//
-//         const newUserId = 'U' + nextId;
-//
-//         const sql = 'INSERT INTO user (id, name, address, phoneNumber) VALUES (?, ?, ?, ?)';
-//         const values = [newUserId, req.body.name, req.body.address, req.body.phoneNumber];
-//
-//         db_mysql.query(sql, values, (err, result) => {
-//             if (err) {
-//                 return res.status(500).json(err);
-//             }
-//
-//             return res.json(result);
-//         });
-//     });
-// });
-//
-// app.get('/users/read/:id', (req, res) => {
-//     const sql = 'SELECT * FROM user WHERE id = ?';
-//     const id = req.params.id;
-//     db_mysql.query(sql, [id], (err, result) => {
-//         if (err) return res.status(500).json({ message: 'Server error' });
-//         return res.json(result);
-//     });
-// });
-//
-// app.put('/users/update/:id', (req, res) => {
-//     const sql = 'UPDATE user SET name=?, address=?, phoneNumber=? WHERE id = ?';
-//     const id = req.params.id;
-//     const { name, address, phoneNumber } = req.body;
-//     db_mysql.query(sql, [name, address, phoneNumber, id], (err, result) => {
-//         if (err) return res.status(500).json({ message: 'Server error' });
-//         return res.json(result);
-//     });
-// });
-//
-// app.delete('/users/delete/:id', (req, res) => {
-//     const sql = 'DELETE FROM user WHERE id=?';
-//     const id = req.params.id;
-//     db_mysql.query(sql, [id], (err, result) => {
-//         if (err) return res.status(500).json({ message: 'Server error' });
-//         return res.json(result);
-//     });
-// });
-//
-// app.listen(7000, () => {
-//     console.log('User Server is listening on port 7000');
-// });
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+
+const app = express();
+const PORT = 7000;
+
+app.use(cors());
+app.use(express.json());
+
+// MongoDB connection URL
+const mongoURL = 'mongodb://127.0.0.1:27017/Users';
+
+mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true });
+const db = mongoose.connection;
+
+db.on('error', (err) => {
+    console.error('MongoDB connection error:', err);
+});
+
+db.once('open', () => {
+    console.log('Connected to MongoDB');
+});
+
+// Define a Mongoose schema for your 'user' collection
+const userSchema = new mongoose.Schema({
+    userID: String,
+    name: String,
+    address: String,
+    phoneNumber: String,
+});
+
+const User = mongoose.model('User', userSchema);
+
+// Routes for the 'user' resource
+
+app.get('/users/read', (req, res) => {
+    User.find({})
+        .then((result) => {
+            if (result.length === 0) {
+                return res.status(404).json({ message: 'No users found' });
+            }
+            return res.json(result);
+        })
+        .catch((err) => {
+            return res.status(500).json({ message: 'Server error' });
+        });
+});
+
+app.get('/users/check/:userID', (req, res) => {
+    const { userID } = req.params;
+
+    User.findOne({ userID: userID })
+        .then((result) => {
+            if (!result) {
+                return res.json(false); // User with the specified ID does not exist
+            }
+            return res.json(true); // User with the specified ID exists
+        })
+        .catch((err) => {
+            return res.status(500).json({ message: 'Server error' });
+        });
+});
+
+
+// Add a new user
+app.post('/users/add', async (req, res) => {
+    const { name, address, phoneNumber } = req.body;
+
+    try {
+        // Find the last user in the database to determine the next user ID
+        const lastUser = await User.findOne({}, {}, { sort: { 'userID': -1 } });
+
+        let nextUserID = 'U1';
+        if (lastUser && lastUser.userID) {
+            const lastUserID = lastUser.userID;
+            const numericPart = parseInt(lastUserID.substring(1));
+            nextUserID = 'U' + (numericPart + 1);
+        }
+
+        // Create a new User instance with the generated user ID
+        const newUser = new User({
+            userID: nextUserID,
+            name,
+            address,
+            phoneNumber,
+        });
+
+        // Save the new user to the database
+        const savedUser = await newUser.save();
+
+        return res.status(201).json(savedUser);
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.put('/users/update/:userID', async (req, res) => {
+    const { userID } = req.params;
+    const { name, address, phoneNumber } = req.body;
+
+    try {
+        // Find the user with the given userID
+        const existingUser = await User.findOne({ userID });
+
+        if (!existingUser) {
+            return res.status(404).json({ message: 'User not found with id: '+ userID });
+        }
+
+        // Update the user's information
+        existingUser.name = name;
+        existingUser.address = address;
+        existingUser.phoneNumber = phoneNumber;
+
+        // Save the updated user to the database
+        const updatedUser = await existingUser.save();
+
+        return res.status(200).json(updatedUser);
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
+app.delete('/users/delete/:userID', async (req, res) => {
+    const userID = req.params.userID;
+
+    try {
+        // Find and delete the user with the specified ID
+        const deletedUser = await User.findOneAndDelete({ userID: userID });
+
+        if (!deletedUser) {
+            return res.status(404).json({ message: 'User not found'});
+        }
+
+        return res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error' });
+    }
+});
+app.listen(PORT, () => {
+    console.log(`User Server is listening on port ${PORT}`);
+});

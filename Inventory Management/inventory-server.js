@@ -107,17 +107,18 @@ app.put('/inventory/purchase', (req, res) => {
     const quantityToPurchase = req.body.quantity;
 
     if (!quantityToPurchase || isNaN(quantityToPurchase) || quantityToPurchase <= 0) {
-        return res.status(400).json({ message: 'Enter a valid quantity' });
+        return res.status(400).json({ success: false, message: 'Enter a valid quantity' });
     }
 
     const checkProductQuery = 'SELECT * FROM products WHERE productID = ?';
     db_mysql.query(checkProductQuery, [productID], (checkErr, productResult) => {
         if (checkErr) {
-            return res.status(500).json({ message: 'Server error' });
+            console.log(checkErr)
+            return res.status(500).json({ success: false, message: 'Server error' });
         }
 
         if (productResult.length === 0) {
-            return res.status(404).json({ message: 'Product not found' });
+            return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
         const product = productResult[0];
@@ -125,7 +126,7 @@ app.put('/inventory/purchase', (req, res) => {
         const unitPrice = product.unitPrice;
 
         if (availableQuantity < quantityToPurchase) {
-            return res.status(400).json({ message: 'Insufficient quantity available' });
+            return res.status(400).json({ success: false, message: 'Insufficient quantity available' });
         }
 
         const cost = quantityToPurchase * unitPrice;
@@ -134,14 +135,13 @@ app.put('/inventory/purchase', (req, res) => {
         const newQuantity = availableQuantity - quantityToPurchase;
         db_mysql.query(updateQuery, [newQuantity, productID], (updateErr, updateResult) => {
             if (updateErr) {
-                return res.status(500).json({ message: 'Server error' });
+                return res.status(500).json({ success: false, message: 'Server error' });
             }
 
-            return res.json({ message: 'Purchase successful', cost });
+            return res.json({ success: true, message: 'Purchase successful', cost });
         });
     });
 });
-
 
 const PORT = process.env.PORT || 9000;
 app.listen(PORT, () => {
