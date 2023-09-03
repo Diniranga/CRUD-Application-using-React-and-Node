@@ -106,6 +106,10 @@ app.put('/inventory/purchase', (req, res) => {
     const productID = req.body.productID;
     const quantityToPurchase = req.body.quantity;
 
+    if (!quantityToPurchase || isNaN(quantityToPurchase) || quantityToPurchase <= 0) {
+        return res.status(400).json({ message: 'Enter a valid quantity' });
+    }
+
     const checkProductQuery = 'SELECT * FROM products WHERE productID = ?';
     db_mysql.query(checkProductQuery, [productID], (checkErr, productResult) => {
         if (checkErr) {
@@ -137,6 +141,7 @@ app.put('/inventory/purchase', (req, res) => {
         });
     });
 });
+
 
 const PORT = process.env.PORT || 9000;
 app.listen(PORT, () => {
