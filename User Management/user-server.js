@@ -22,7 +22,6 @@ db.once('open', () => {
     console.log('Connected to MongoDB');
 });
 
-// Define a Mongoose schema for your 'user' collection
 const userSchema = new mongoose.Schema({
     userID: String,
     name: String,
@@ -31,8 +30,6 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
-
-// Routes for the 'user' resource
 
 app.get('/users/read', (req, res) => {
     User.find({})
@@ -62,13 +59,10 @@ app.get('/users/check/:userID', (req, res) => {
         });
 });
 
-
-// Add a new user
 app.post('/users/add', async (req, res) => {
     const { name, address, phoneNumber } = req.body;
 
     try {
-        // Find the last user in the database to determine the next user ID
         const lastUser = await User.findOne({}, {}, { sort: { 'userID': -1 } });
 
         let nextUserID = 'U1';
@@ -78,7 +72,6 @@ app.post('/users/add', async (req, res) => {
             nextUserID = 'U' + (numericPart + 1);
         }
 
-        // Create a new User instance with the generated user ID
         const newUser = new User({
             userID: nextUserID,
             name,
@@ -86,7 +79,6 @@ app.post('/users/add', async (req, res) => {
             phoneNumber,
         });
 
-        // Save the new user to the database
         const savedUser = await newUser.save();
 
         return res.status(201).json(savedUser);
@@ -100,19 +92,16 @@ app.put('/users/update/:userID', async (req, res) => {
     const { name, address, phoneNumber } = req.body;
 
     try {
-        // Find the user with the given userID
         const existingUser = await User.findOne({ userID });
 
         if (!existingUser) {
-            return res.status(404).json({ message: 'User not found with id: '+ userID });
+            return res.status(404).json({ message: 'User not found with id: ' + userID });
         }
 
-        // Update the user's information
         existingUser.name = name;
         existingUser.address = address;
         existingUser.phoneNumber = phoneNumber;
 
-        // Save the updated user to the database
         const updatedUser = await existingUser.save();
 
         return res.status(200).json(updatedUser);
@@ -121,16 +110,14 @@ app.put('/users/update/:userID', async (req, res) => {
     }
 });
 
-
 app.delete('/users/delete/:userID', async (req, res) => {
     const userID = req.params.userID;
 
     try {
-        // Find and delete the user with the specified ID
         const deletedUser = await User.findOneAndDelete({ userID: userID });
 
         if (!deletedUser) {
-            return res.status(404).json({ message: 'User not found'});
+            return res.status(404).json({ message: 'User not found' });
         }
 
         return res.status(200).json({ message: 'User deleted successfully' });
@@ -138,6 +125,7 @@ app.delete('/users/delete/:userID', async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 });
+
 app.listen(PORT, () => {
     console.log(`User Server is listening on port ${PORT}`);
 });

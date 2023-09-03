@@ -64,13 +64,11 @@ app.put('/orders/update/:orderID', (req, res) => {
 });
 
 app.post('/orders/add', async (req, res) => {
-
     const userID = req.body.userID;
     const productID = req.body.productID;
     const quantity = req.body.quantity;
 
     try {
-
         const userExistsResponse = await fetch(`http://localhost:7000/users/check/${userID}`);
         const userExists = await userExistsResponse.json();
 
@@ -78,25 +76,22 @@ app.post('/orders/add', async (req, res) => {
             return res.status(400).json({ success: false, message: 'User does not exist' });
         }
 
-        // If userID exists, proceed with the purchase
         const purchaseResponse = await fetch(`http://localhost:9000/inventory/purchase`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                "productID": productID, // Replace with the actual productID value
-                "quantity": quantity,   // Replace with the actual quantity value
+                "productID": productID,
+                "quantity": quantity,
             }),
         });
 
         const purchaseResult = await purchaseResponse.json();
 
         if (purchaseResult.success) {
-            // You can access the cost here from purchaseResult.cost
             const cost = purchaseResult.cost;
 
-            // Purchase was successful, generate the next OrderID
             const maxIdQuery = 'SELECT MAX("orderID") AS maxId FROM orders';
 
             db.query(maxIdQuery, (err, result) => {
@@ -112,7 +107,7 @@ app.post('/orders/add', async (req, res) => {
                 const newOrderID = 'O' + nextId;
 
                 const sql = 'INSERT INTO orders ("orderID", "userID", "productID", "quantity", "cost", "date") VALUES ($1, $2, $3, $4, $5, NOW())';
-                const values = [newOrderID, userID, productID, quantity, cost]; // Use the cost from purchaseResult
+                const values = [newOrderID, userID, productID, quantity, cost];
 
                 db.query(sql, values, (err, result) => {
                     if (err) return res.status(500).json(err);
@@ -120,7 +115,6 @@ app.post('/orders/add', async (req, res) => {
                 });
             });
         } else {
-            // Purchase was not successful
             return res.status(400).json(purchaseResult);
         }
     } catch (error) {
