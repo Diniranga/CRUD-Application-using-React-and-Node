@@ -63,7 +63,7 @@ app.post('/inventory/add', (req, res) => {
     });
 });
 
-app.get('/inventory/read/:productID', (req, res) => {
+app.get('/inventory/check/:productID', (req, res) => {
     const sql = 'SELECT * FROM products WHERE productID = ?';
     const productID = req.params.productID;
     db_mysql.query(sql, [productID], (err, result) => {
@@ -79,7 +79,7 @@ app.get('/inventory/read/:productID', (req, res) => {
     });
 });
 
-app.put('/inventory/update/:productID', (req, res) => {
+app.put('/inventory/update/productDetails/:productID', (req, res) => {
     const sql = 'UPDATE products SET productName=?, qty=?, unitPrice=? WHERE productID = ?';
     const productID = req.params.productID;
     const { productName, qty, unitPrice } = req.body;
@@ -90,6 +90,27 @@ app.put('/inventory/update/:productID', (req, res) => {
         return res.json(result);
     });
 });
+
+app.put('/inventory/update/productQuantity/:productID', (req, res) => {
+    const updateProductQuery = 'UPDATE products SET qty = qty + ? WHERE productID = ?';
+    const productID = req.params.productID;
+    const qty = req.body.quantity;
+
+    const unitPriceQuery = 'SELECT unitPrice FROM products where productID = ?';
+    db_mysql.query(unitPriceQuery, [productID], (uniterr, unitResult) => {
+        if (uniterr) {
+            return res.status(500).json({ message: 'Unable to find productID' });
+        }
+        db_mysql.query(updateProductQuery, [qty, productID], (err, result) => {
+            if (err) {
+                return res.status(500).json({ message: 'Server error' });
+            }
+            const unitPrice = unitResult[0].unitPrice; // Get the unitPrice from the query result
+            return res.json({ unitPrice });
+        });
+    });
+});
+
 
 app.delete('/inventory/delete/:productID', (req, res) => {
     const sql = 'DELETE FROM products WHERE productID=?';
